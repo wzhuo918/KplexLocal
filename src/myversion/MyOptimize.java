@@ -81,11 +81,11 @@ public class MyOptimize {
 					}
 					isCritEmpty = isCritEmpth(curRes);
 					HashMap<Integer, Integer> prunableNot;
-					if (!isCritEmpty) {
+//					if (!isCritEmpty) {
 						prunableNot = getPrunableNot(connnot);
 						updateNotCdeg(prunableNot, curCand);
-					} else
-						prunableNot = new HashMap<Integer, Integer>();
+//					} else
+//						prunableNot = new HashMap<Integer, Integer>();
 					Iterator<Integer> iter = conncand.iterator();
 					while (curRes.size() + curCand.size() >= quasiCliqueSize) {
 						if (conncand.isEmpty()) {
@@ -103,33 +103,54 @@ public class MyOptimize {
 						}
 						Integer vp = null;
 						// 选择分裂点算法
-						if (isCritEmpty || prunableNot.isEmpty()) {
-							vp = iter.next();
-						} else {
-							int minpoint = 0, mindeg = curCand.size() + 10000;
-							for (Entry<Integer, Integer> en : prunableNot
-									.entrySet()) {
-								if (en.getValue() < mindeg) {
-									mindeg = en.getValue();
-									minpoint = en.getKey();
+						if(!isCritEmpty){
+							if (!prunableNot.isEmpty()) {
+								int minpoint = 0, mindeg = curCand.size() + 10000;
+								for (Entry<Integer, Integer> en : prunableNot
+										.entrySet()) {
+									if (en.getValue() < mindeg) {
+										mindeg = en.getValue();
+										minpoint = en.getKey();
+									}
 								}
+								if (mindeg == 0)
+									vp = -1;
+								else {
+									HashSet<Integer> set = oneLeap.get(minpoint);
+									iter = conncand.iterator();
+									while (iter.hasNext()) {
+										Integer po = iter.next();
+										if (!set.contains(po)) {
+											vp = po;
+											break;
+										}
+									}
+								}
+								
+							} else {
+
+								vp = iter.next();
 							}
-							if (mindeg == 0)
-								vp = -1;
-							else {
-								HashSet<Integer> set = oneLeap.get(minpoint);
-								iter = conncand.iterator();
-								while (iter.hasNext()) {
-									Integer po = iter.next();
-									if (!set.contains(po)) {
-										vp = po;
+							if (vp == -1)// 剪枝
+								break;
+						}else{
+							if(!prunableNot.isEmpty()){
+								boolean dup = false;
+								for(Integer v:prunableNot.values())
+								{
+									if(v==0){
+										dup = true;
 										break;
 									}
 								}
+								if(dup)
+									break;
 							}
+							iter = conncand.iterator();
+							vp = iter.next();
+							
 						}
-						if (vp == -1)// 剪枝
-							break;
+						
 
 						int counter = curCand.get(vp);
 						iter.remove();
